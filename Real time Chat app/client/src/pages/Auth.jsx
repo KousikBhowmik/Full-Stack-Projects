@@ -7,17 +7,65 @@ import {
   TabsTrigger,
 } from "../components/ui/tabs.jsx";
 import { Input } from "../components/ui/input.jsx";
+import { Button } from "@/components/ui/button";
+import Background from "../assets/login2.png";
+import { toast } from "sonner";
+import { apiClient } from "@/lib/api-client";
+import { LOGIN_ROUTE, SINGUP_ROUTE } from "@/utils/constants";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState();
+  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handelLogin = async () => {
-    // min 42 min
+  const validate = (type = "") => {
+    const passRegex =
+      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+\-=\[\]{};:'",.<>/?]{6,}$/;
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Email is requierd");
+    }
+    if (!passRegex.test(password)) {
+      toast.error("Valid password is needed");
+    } else if (password !== confirmPassword && type === "singup") {
+      toast.error("Both password mast be same");
+    }
+    if (!passRegex.test(password) || !emailRegex.test(email)) {
+      return false;
+    }
+    return true;
   };
 
-  const handelSingup = async () => {};
+  const handelLogin = async () => {
+    if (!validate()) {
+      return;
+    }
+
+    console.log("login fun");
+    console.log(email, password);
+
+    const { data } = await apiClient.get(
+      LOGIN_ROUTE,
+      { params: { email, password } },
+      { withCredentials: true }
+    );
+
+    console.log(data);
+  };
+
+  const handelSingup = async () => {
+    if (!validate("singup")) {
+      return;
+    }
+    console.log("hello");
+
+    const { data } = await apiClient.post(
+      SINGUP_ROUTE,
+      { email, password },
+      { withCredentials: true }
+    );
+    console.log(data);
+  };
 
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center  ">
@@ -25,10 +73,12 @@ const Auth = () => {
         <div className="flex flex-col gap-10  items-center justify-center ">
           <div className="flex flex-col items-center justify-center ">
             <div className="flex items-center justify-center">
-              <h1 className="text-5xl font-bold lg:text-6xl  ">Welcome</h1>
+              <h1 className="text-4xl sm:text-5xl font-bold lg:text-6xl  ">
+                Welcome
+              </h1>
               <img src={victory} alt="victory emoji" className="h-[100px]" />
             </div>
-            <p className="font-medium text-center">
+            <p className="font-medium text-center px-3">
               Fill the all details to get started with the best chat app!
             </p>
           </div>
@@ -68,6 +118,9 @@ const Auth = () => {
                   }}
                   value={password}
                 />
+                <Button className="rounded-full p-6 " onClick={handelLogin}>
+                  Login
+                </Button>
               </TabsContent>
               <TabsContent className="flex flex-col gap-5" value="singup">
                 <Input
@@ -95,11 +148,22 @@ const Auth = () => {
                   onChange={(e) => {
                     setConfirmPassword(e.target.value);
                   }}
-                  value={password}
+                  value={confirmPassword}
                 />
+
+                <Button className="rounded-full p-6 " onClick={handelSingup}>
+                  Singup
+                </Button>
               </TabsContent>
             </Tabs>
           </div>
+        </div>
+        <div>
+          <img
+            src={Background}
+            alt="background"
+            className="hidden xl:flex items-center justify-center"
+          />
         </div>
       </div>
     </div>
